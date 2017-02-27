@@ -1,49 +1,83 @@
-# Dockerfile to build VScode container images 
+# Visual Studio Code in a container
+#	NOTE: Needs the redering device (yeah... idk)
+#
+# docker run -d \
+#    -v /tmp/.X11-unix:/tmp/.X11-unix \
+#    -v $HOME:/home/user \
+#    -e DISPLAY=unix$DISPLAY \
+#    --device /dev/dri \
+#    --name vscode \
+#    jess/vscode
 
-# Set the base image to debian
-FROM debian:8
+FROM debian:stretch
+MAINTAINER Jessie Frazelle <jess@linux.com>
 
-# File Author / Maintainer
-LABEL maintainer Douglas McCloskey <dmccloskey87@gmail.com>
+RUN apt-get update && apt-get install -y \
+	libasound2 \
+	libatk1.0-0 \
+	libcairo2 \
+	libcups2 \
+	libdatrie1 \
+	libdbus-1-3 \
+	libfontconfig1 \
+	libfreetype6 \
+	libgconf-2-4 \
+	libgcrypt20 \
+	libgl1-mesa-dri \
+	libgl1-mesa-glx \
+	libgdk-pixbuf2.0-0 \
+	libglib2.0-0 \
+	libgtk2.0-0 \
+	libgpg-error0 \
+	libgraphite2-3 \
+	libnotify-bin \
+	libnss3 \
+	libnspr4 \
+	libpango-1.0-0 \
+	libpangocairo-1.0-0 \
+	libxcomposite1 \
+	libxcursor1 \
+	libxdmcp6 \
+	libxi6 \
+	libxrandr2 \
+	libxrender1 \
+	libxss1 \
+	libxtst6 \
+	liblzma5 \
+	--no-install-recommends
 
-# Set the environmental variable
-ENV DEBIAN_FRONTEND noninteractive  
+ENV HOME /home/user
+RUN useradd --create-home --home-dir $HOME user \
+    && chmod -R u+rwx $HOME \
+&& chown -R user:user $HOME
 
-RUN apt-get update && apt-get install -y unzip sudo libgtk2.0-0 libgconf2-4 libnss3 \  
-            libasound2 libxtst6 libcanberra-gtk-module libgl1-mesa-glx && rm -rf /var/lib/apt/lists/*
+# https://code.visualstudio.com/Download
+ENV CODE_VERSION 1.9.1-1486597190
+ENV CODE_COMMIT f9d0c687ff2ea7aabd85fb9a43129117c0ecf519
 
+# download the source
+RUN buildDeps=' \
+		ca-certificates \
+		curl \
+		gnupg \
+	' \
+	&& set -x \
+	&& apt-get update && apt-get install -y $buildDeps --no-install-recommends \
+	&& curl -sL https://deb.nodesource.com/setup_6.x | bash - \
+	&& apt-get update && apt-get install -y nodejs --no-install-recommends \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& curl -sSL "https://az764295.vo.msecnd.net/stable/${CODE_COMMIT}/code_${CODE_VERSION}_amd64.deb" -o /tmp/vs.deb \
+	&& dpkg -i /tmp/vs.deb \
+	&& rm -rf /tmp/vs.deb \
+	&& apt-get purge -y --auto-remove $buildDeps
 
-## Install wget
-#RUN apt-get update && apt-get install -y wget
+#COPY start.sh /home/user/start.sh
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod u+rwx /usr/local/bin/start.sh && chown user:user /usr/local/bin/start.sh
+COPY local.conf /etc/fonts/local.conf
 
-# Install VSCode
-WORKDIR /usr/local/ 
-#RUN wget http://download.microsoft.com/download/...
-ADD ./source/code-stable-code_1.9.1-1486597190_amd64.tar.gz /usr/local/
-#RUN tar -zxvf VSCode-linux-x64.tar.gz 
-RUN adduser --disabled-login --uid 1000 \--gecos 'dummy' dummy
+WORKDIR $HOME
+USER user
 
-## add VSCode to path
-#ENV PATH /usr/local/VSCode-linux-x64/bin:$PATH
-
-## Cleanup
-#RUN rm -rf breseq-0.26.0-Linux-x86_64.tar.gz
-RUN apt-get clean
-
-## Create an app user
-#ENV HOME /home/user
-#RUN useradd --create-home --home-dir $HOME user \
-#    && chmod -R u+rwx $HOME \
-#    && chown -R user:user $HOME
-
-#WORKDIR $HOME
-#USER user
-
-CMD ["sudo","-u","dummy","/usr/local/VSCode-linux-x64/code"]
-
-##Test:
-#Run
-#docker build -t dmccloskey/docker-vsc .
-
-#Use:
-#docker run -ti -e DISPLAY -v $HOME/.Xauthority:/home/dummy/.Xauthority -v $PWD:/shared --net=host dmccloskey/docker-vsc
+#ENTRYPOINT [ "/home/user/start.sh" ]
+ENTRYPOINT [ "/usr/local/bin/start.sh" ]
