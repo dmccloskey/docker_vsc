@@ -1,83 +1,48 @@
-# Visual Studio Code in a container
-#	NOTE: Needs the redering device (yeah... idk)
-#
-# docker run -d \
-#    -v /tmp/.X11-unix:/tmp/.X11-unix \
-#    -v $HOME:/home/user \
-#    -e DISPLAY=unix$DISPLAY \
-#    --device /dev/dri \
-#    --name vscode \
-#    jess/vscode
+FROM debian:8
 
-FROM debian:stretch
-MAINTAINER Jessie Frazelle <jess@linux.com>
+ENV DEBIAN_FRONTEND noninteractive  
+RUN apt-get update
+RUN apt-get install -y curl \
+                       git \
+                       libasound2 \
+                       libcanberra-gtk-module \
+                       libgconf2-4 \
+                       libgl1-mesa-glx \
+                       libgtk2.0-0 \
+                       libnotify4 \
+                       libnss3 \
+                       libx11-dev \
+                       libxtst6 \
+                       sudo \
+                       unzip
+RUN rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y \
-	libasound2 \
-	libatk1.0-0 \
-	libcairo2 \
-	libcups2 \
-	libdatrie1 \
-	libdbus-1-3 \
-	libfontconfig1 \
-	libfreetype6 \
-	libgconf-2-4 \
-	libgcrypt20 \
-	libgl1-mesa-dri \
-	libgl1-mesa-glx \
-	libgdk-pixbuf2.0-0 \
-	libglib2.0-0 \
-	libgtk2.0-0 \
-	libgpg-error0 \
-	libgraphite2-3 \
-	libnotify-bin \
-	libnss3 \
-	libnspr4 \
-	libpango-1.0-0 \
-	libpangocairo-1.0-0 \
-	libxcomposite1 \
-	libxcursor1 \
-	libxdmcp6 \
-	libxi6 \
-	libxrandr2 \
-	libxrender1 \
-	libxss1 \
-	libxtst6 \
-	liblzma5 \
-	--no-install-recommends
+RUN curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+RUN sudo apt-get install -y nodejs build-essential
 
-ENV HOME /home/user
-RUN useradd --create-home --home-dir $HOME user \
-    && chmod -R u+rwx $HOME \
-&& chown -R user:user $HOME
+RUN mkdir /vscode
+RUN curl -sL https://vscode-update.azurewebsites.net/latest/linux-x64/stable > /vscode/VSCode-linux-x64-stable.zip  
+WORKDIR /vscode
 
-# https://code.visualstudio.com/Download
-ENV CODE_VERSION 1.9.1-1486597190
-ENV CODE_COMMIT f9d0c687ff2ea7aabd85fb9a43129117c0ecf519
+RUN unzip VSCode-linux-x64-stable.zip && rm VSCode-linux-x64-stable.zip  
+RUN adduser --disabled-login --uid 1000 \--gecos 'dummy' dummy
 
-# download the source
-RUN buildDeps=' \
-		ca-certificates \
-		curl \
-		gnupg \
-	' \
-	&& set -x \
-	&& apt-get update && apt-get install -y $buildDeps --no-install-recommends \
-	&& curl -sL https://deb.nodesource.com/setup_6.x | bash - \
-	&& apt-get update && apt-get install -y nodejs --no-install-recommends \
-	&& rm -rf /var/lib/apt/lists/* \
-	&& curl -sSL "https://az764295.vo.msecnd.net/stable/${CODE_COMMIT}/code_${CODE_VERSION}_amd64.deb" -o /tmp/vs.deb \
-	&& dpkg -i /tmp/vs.deb \
-	&& rm -rf /tmp/vs.deb \
-	&& apt-get purge -y --auto-remove $buildDeps
+RUN mkdir /home/dummy/.config
+RUN mkdir /home/dummy/.vscode
+RUN chown -R dummy /home/dummy/.config
+RUN chown -R dummy /home/dummy/.vscode
 
-#COPY start.sh /home/user/start.sh
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod u+rwx /usr/local/bin/start.sh && chown user:user /usr/local/bin/start.sh
-COPY local.conf /etc/fonts/local.conf
+CMD ["sudo","-u","dummy","/vscode/VSCode-linux-x64/bin/code","--verbose"]
 
-WORKDIR $HOME
-USER user
+##Run:
+## Make directories here otherwise they will be created with permissions that are too restrictive
+#mkdir -p .vscode
+#mkdir -p user-data-dir
 
-#ENTRYPOINT [ "/home/user/start.sh" ]
-ENTRYPOINT [ "/usr/local/bin/start.sh" ]
+## Launch VS Code
+#sudo docker run -ti -e DISPLAY --net=host \
+#    -v $HOME/.Xauthority:/home/dummy/.Xauthority \
+#    -v $HOME/dev:/home/dummy/dev \
+#    -v $(pwd)/user-data-dir:/home/dummy/.config/Code \
+#    -v $(pwd)/.vscode:/home/dummy/.vscode \
+#    vscode
