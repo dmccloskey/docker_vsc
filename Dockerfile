@@ -65,8 +65,8 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
 	&& apt-get purge -y
 
 # copy in the startup scripts
-#COPY start.sh /usr/local/bin/start.sh
-#RUN chmod u+rwx /usr/local/bin/start.sh && chown user:user /usr/local/bin/start.sh
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod u+rwx /usr/local/bin/start.sh && chown user:user /usr/local/bin/start.sh
 COPY local.conf /etc/fonts/local.conf
 
 # create nodejs and code configuration files
@@ -76,7 +76,7 @@ RUN mkdir /home/user/.config \
 	&& chown -R user /home/user/.vscode
 
 WORKDIR $HOME
-#USER user
+USER user
 
-#ENTRYPOINT [ "/usr/local/bin/start.sh" ]
-CMD ["sudo","-u","user","/usr/bin/code","--verbose"]
+ENTRYPOINT [ "/usr/local/bin/start.sh" ]
+# CMD ["sudo","-u","user","/usr/bin/code","--verbose"]
