@@ -1,4 +1,4 @@
-FROM debian:8
+FROM debian:latest
 LABEL maintainer Douglas McCloskey <dmccloskey87@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive 
@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y \
 	libxss1 \
 	libxtst6 \
 	liblzma5 \
+	libxkbfile1 \
         sudo \
 	ca-certificates \
 	gnupg \
@@ -50,14 +51,15 @@ RUN adduser --disabled-login --uid 1000 \
 && chown -R user:user $HOME
 
 # https://code.visualstudio.com/Download
-ENV CODE_VERSION 1.9.1-1486597190
+ENV CODE_VERSION 1.12.2-1494422229
 ENV CODE_COMMIT f9d0c687ff2ea7aabd85fb9a43129117c0ecf519
 
 # download the source
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
 	&& apt-get update && apt-get install -y  nodejs --no-install-recommends \
 	&& rm -rf /var/lib/apt/lists/* \
-	&& curl -sSL "https://az764295.vo.msecnd.net/stable/${CODE_COMMIT}/code_${CODE_VERSION}_amd64.deb" -o /tmp/vs.deb \
+	&& curl -sSL "https://vscode-update.azurewebsites.net/latest/linux-deb-x64/stable" -o /tmp/vs.deb \
+	# && curl -sSL "https://az764295.vo.msecnd.net/stable/${CODE_COMMIT}/code_${CODE_VERSION}_amd64.deb" -o /tmp/vs.deb \
 	&& dpkg -i /tmp/vs.deb \
 	&& rm -rf /tmp/vs.deb \
 	&& apt-get purge -y
