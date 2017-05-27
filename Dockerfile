@@ -78,7 +78,8 @@ RUN mkdir /home/developer/.config \
 WORKDIR $HOME
 USER developer
 
-CMD ["sudo","-u","user","/usr/bin/code","--verbose"]
+CMD ["/usr/bin/code"]
+# CMD ["sudo","-u","developer","/usr/bin/code","--verbose"]
 
 ##Run:
 #docker run -ti -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net=host     -v $HOME/.Xauthority:/home/user/.Xauthority     -v $HOME/dev:/home/user/dev     --name vsc dmccloskey/docker-vsc
