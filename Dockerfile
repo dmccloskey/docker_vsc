@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y \
 	libxtst6 \
 	liblzma5 \
 	libxkbfile1 \
+	sudo \
 	--no-install-recommends
 
 ENV HOME /home/user
