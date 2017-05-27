@@ -82,5 +82,8 @@ CMD ["/usr/bin/code"]
 # CMD ["sudo","-u","developer","/usr/bin/code","--verbose"]
 
 ##Run:
-#docker run -ti -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net=host     -v $HOME/.Xauthority:/home/user/.Xauthority     -v $HOME/dev:/home/user/dev     --name vsc dmccloskey/docker-vsc
+#e.g., https://github.com/jessfraz/dockerfiles/blob/master/vscode/Dockerfile
+#e.g., http://fabiorehm.com/blog/2014/09/11/running-gui-apps-with-docker/
+#xhost +local:docker
+#docker run -ti -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net=host     -v $HOME/.Xauthority:/home/developer/.Xauthority     -v $HOME/dev:/home/developer/dev     --name vsc dmccloskey/docker-vsc
 
