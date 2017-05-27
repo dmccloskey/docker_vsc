@@ -1,5 +1,5 @@
-FROM debian:latest
-LABEL maintainer Douglas McCloskey <dmccloskey87@gmail.com>
+FROM debian:stretch
+LABEL maintainer "Jessie Frazelle <jess@linux.com>"
 
 RUN apt-get update && apt-get install -y \
 	gnupg \
@@ -35,14 +35,11 @@ RUN apt-get update && apt-get install -y \
 	libxtst6 \
 	liblzma5 \
 	libxkbfile1 \
-	sudo \
 	--no-install-recommends
 
 ENV HOME /home/user
-RUN adduser --disabled-login --uid 1000 \
- --home $HOME --gecos 'user' user \
-    && chmod -R u+rwx $HOME \
-&& chown -R user:user $HOME
+RUN useradd --create-home --home-dir $HOME user \
+	&& chown -R user:user $HOME
 
 # https://code.visualstudio.com/Download
 ENV CODE_VERSION 1.12.1-1493934083
@@ -63,17 +60,8 @@ RUN buildDeps=' \
 	&& dpkg -i /tmp/vs.deb \
 	&& rm -rf /tmp/vs.deb
 
-# create nodejs and code configuration files
-RUN mkdir /home/user/.config \
-	&& mkdir /home/user/.vscode \
-	&& chown -R user /home/user/.config \
-	&& chown -R user /home/user/.vscode
+COPY start.sh /usr/local/bin/start.sh
 
 WORKDIR $HOME
-USER user
 
-CMD ["sudo","-u","user","/usr/bin/code","--verbose"]
-
-##Run:
-#docker run -ti -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net=host     -v $HOME/.Xauthority:/home/user/.Xauthority     -v $HOME/dev:/home/user/dev     --name vsc dmccloskey/docker-vsc
-
+CMD [ "start.sh" ]
