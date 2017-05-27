@@ -1,8 +1,6 @@
 FROM debian:latest
 LABEL maintainer Douglas McCloskey <dmccloskey87@gmail.com>
 
-ENV DEBIAN_FRONTEND noninteractive 
-
 RUN apt-get update && apt-get install -y \
 	gnupg \
 	libasound2 \
@@ -64,10 +62,6 @@ RUN buildDeps=' \
 	&& dpkg -i /tmp/vs.deb \
 	&& rm -rf /tmp/vs.deb
 
-# copy in the startup scripts
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod u+rwx /usr/local/bin/start.sh && chown user:user /usr/local/bin/start.sh
-
 # create nodejs and code configuration files
 RUN mkdir /home/user/.config \
 	&& mkdir /home/user/.vscode \
@@ -77,4 +71,8 @@ RUN mkdir /home/user/.config \
 WORKDIR $HOME
 USER user
 
-CMD [ "start.sh" ]
+CMD ["sudo","-u","user","/usr/bin/code","--verbose"]
+
+##Run:
+#docker run -ti -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net=host     -v $HOME/.Xauthority:/home/user/.Xauthority     -v $HOME/dev:/home/user/dev     --name vsc dmccloskey/docker-vsc
+
