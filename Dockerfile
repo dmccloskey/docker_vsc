@@ -57,14 +57,17 @@ RUN buildDeps=' \
 	&& dpkg -i /tmp/vs.deb \
 	&& rm -rf /tmp/vs.deb
 
-# create developer
-RUN groupadd -r developer -g 1000 && \
-	useradd -u 1000 -r -g developer -d /developer -s /bin/bash -c "Software Developer" developer && \
-	# enable sudo for developer
+# Replace 1000 with your user / group id
+RUN export uid=1000 gid=1000 && \
+    mkdir -p /home/developer && \
+    echo "developer:x:${uid}:${gid}:Developer,,,:/home/developer:/bin/bash" >> /etc/passwd && \
+    echo "developer:x:${uid}:" >> /etc/group && \
     echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
-	# fix developer permissions
-    chown -R developer:developer /developer && \
-    chmod +x /developer/bin/*
+    chmod 0440 /etc/sudoers.d/developer && \
+    chown ${uid}:${gid} -R /home/developer
+
+USER developer
+ENV HOME /home/developer
 
 # create nodejs and code configuration files
 RUN mkdir /home/developer/.config \
