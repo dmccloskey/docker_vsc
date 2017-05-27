@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
 	libxtst6 \
 	liblzma5 \
 	libxkbfile1 \
-	sudo \
+	# sudo \
 	--no-install-recommends
 
 # https://code.visualstudio.com/Download
@@ -57,6 +57,10 @@ RUN buildDeps=' \
 	&& dpkg -i /tmp/vs.deb \
 	&& rm -rf /tmp/vs.deb
 
+# ENV HOME /home/developeruser
+# RUN useradd --create-home --home-dir $HOME developer \
+# 	&& chown -R developer:developer $HOME
+
 # Replace 1000 with your user / group id
 RUN export uid=1000 gid=1000 && \
     mkdir -p /home/developer && \
@@ -64,9 +68,10 @@ RUN export uid=1000 gid=1000 && \
     echo "developer:x:${uid}:" >> /etc/group && \
     echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
     chmod 0440 /etc/sudoers.d/developer && \
-    chown ${uid}:${gid} -R /home/developer
+    chown ${uid}:${gid} -R /home/developer && \
+	#xrd fix on ubuntu/debian
+	sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' /usr/lib/x86_64-linux-gnu/libxcb.so.1
 
-USER developer
 ENV HOME /home/developer
 
 # create nodejs and code configuration files
@@ -80,6 +85,7 @@ USER developer
 
 CMD ["/usr/bin/code"]
 # CMD ["sudo","-u","developer","/usr/bin/code","--verbose"]
+# CMD [ "start.sh" ]
 
 ##Run:
 #e.g., https://github.com/jessfraz/dockerfiles/blob/master/vscode/Dockerfile
