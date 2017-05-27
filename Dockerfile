@@ -1,5 +1,5 @@
-FROM debian:stretch
-LABEL maintainer "Jessie Frazelle <jess@linux.com>"
+FROM debian:latest
+LABEL maintainer Douglas McCloskey <dmccloskey87@gmail.com>
 
 RUN apt-get update && apt-get install -y \
 	gnupg \
@@ -35,11 +35,8 @@ RUN apt-get update && apt-get install -y \
 	libxtst6 \
 	liblzma5 \
 	libxkbfile1 \
+	sudo \
 	--no-install-recommends
-
-ENV HOME /home/user
-RUN useradd --create-home --home-dir $HOME user \
-	&& chown -R user:user $HOME
 
 # https://code.visualstudio.com/Download
 ENV CODE_VERSION 1.12.1-1493934083
@@ -60,8 +57,26 @@ RUN buildDeps=' \
 	&& dpkg -i /tmp/vs.deb \
 	&& rm -rf /tmp/vs.deb
 
-COPY start.sh /usr/local/bin/start.sh
+# create developer
+RUN groupadd -r developer -g 1000 && \
+	useradd -u 1000 -r -g developer -d /developer -s /bin/bash -c "Software Developer" developer && \
+	# enable sudo for developer
+    echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
+	# fix developer permissions
+    chown -R developer:developer /developer && \
+    chmod +x /developer/bin/*
+
+# create nodejs and code configuration files
+RUN mkdir /home/developer/.config \
+	&& mkdir /home/developer/.vscode \
+	&& chown -R developer /home/developer/.config \
+	&& chown -R developer /home/developer/.vscode
 
 WORKDIR $HOME
+USER developer
 
-CMD [ "start.sh" ]
+CMD ["sudo","-u","user","/usr/bin/code","--verbose"]
+
+##Run:
+#docker run -ti -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net=host     -v $HOME/.Xauthority:/home/user/.Xauthority     -v $HOME/dev:/home/user/dev     --name vsc dmccloskey/docker-vsc
+
