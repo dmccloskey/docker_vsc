@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
 	libxtst6 \
 	liblzma5 \
 	libxkbfile1 \
-	# sudo \
+	sudo \
 	--no-install-recommends
 
 # https://code.visualstudio.com/Download
