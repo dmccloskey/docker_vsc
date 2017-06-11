@@ -113,5 +113,7 @@ CMD ["/usr/bin/code"]
 #e.g., https://github.com/jessfraz/dockerfiles/blob/master/vscode/Dockerfile
 #e.g., http://fabiorehm.com/blog/2014/09/11/running-gui-apps-with-docker/
 #xhost +local:docker
-#docker run -ti -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net=host     -v $HOME/.Xauthority:/home/developer/.Xauthority     -v $HOME/dev:/home/developer/dev     --name vsc dmccloskey/docker-vsc
+##CMD appears not to be working.  Need to /bin/bash into the container, and then execute /usr/bin/code
+#docker run -ti -e DISPLAY=unix$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net=host     -v $HOME/.Xauthority:/home/developer/.Xauthority     -v $HOME/dev:/home/developer/dev     --name vsc dmccloskey/docker-vsc /bin/bash
+#as developer in the container: /usr/bin/code
 
