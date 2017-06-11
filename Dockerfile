@@ -71,8 +71,9 @@ RUN export uid=1000 gid=1000 && \
     chown ${uid}:${gid} -R /home/developer && \
 	#xrdp fix on ubuntu/debian
 	#https://stackoverflow.com/questions/36694941/visual-studio-code-1-fails-to-launch-on-ubuntu-using-xrdp
-	sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' /usr/lib/x86_64-linux-gnu/libxcb.so.1
-	
+	sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' /usr/lib/x86_64-linux-gnu/libxcb.so.1 && \
+	cp /usr/lib/x86_64-linux-gnu/libxcb.so.1 /usr/share/code/libxcb.so.1
+
 # #GLIB_2.18 workaround for vscode (testing)
 # #https://github.com/Microsoft/vscode-cpptools/issues/19
 # # COPY Microsoft.VSCode.CPP.Extension.linux.sh ~/.vscode/extension/ms-vscode.cpptools-0.9.3/bin
